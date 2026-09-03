@@ -2,10 +2,9 @@
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
-// import User from "./models/user.model.js";
+import User from "./models/user.model.js";
 import { connectDB } from "./lib/db.js";
-import { clerkMiddleware } from "clerk/express";
-
+import { clerkMiddleware } from "@clerk/express";
 // env data
 const app = express();
 const PORT = process.env.PORT;
