@@ -77,7 +77,7 @@ const app = express();
 
 const PORT = process.env.PORT || 5000;
 
-const frontendDist = path.resolve(process.cwd(), "../frontend/dist");
+const frontendDist = path.resolve(process.cwd(), "public");
 
 app.use(express.json());
 
