@@ -1,0 +1,12 @@
+{
+  "name": "real-time-chat",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "build": "npm --prefix frontend run build && node -e \"const fs=require('fs'); fs.rmSync('backend/public',{recursive:true,force:true}); fs.cpSync('frontend/dist','backend/public',{recursive:true})\"",
+    "start": "npm run build && npm --prefix backend start"
+  }
+}
