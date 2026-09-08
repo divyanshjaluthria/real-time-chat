@@ -4,16 +4,24 @@ import cors from "cors";
 import "dotenv/config";
 import fs from "fs";
 import path from "path";
-import User from "./models/user.model.js";
+import User from "./models/User.model.js";
 import { connectDB } from "./lib/db.js";
 import job from "./lib/cron.js";
 import { clerkMiddleware } from "@clerk/express";
+import clerkWebhook from "./webhooks/clerk.webhook.js";
 
 // env data
 const app = express();
 const PORT = process.env.PORT;
 const FRONTEND_URL = process.env.FRONTEND_URL;
 const publicDir = path.join(process.cwd(), "public");
+
+// its imp that you dont parse the webhook event data , it should be in raw format
+app.use(
+  "/api/weebhooks/clerk",
+  express.raw({ type: "application/json" }),
+  clerkWebhook,
+);
 
 //middlewares
 app.use(express.json());
