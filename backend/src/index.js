@@ -31,6 +31,10 @@ app.get("/{*any}", (req, res, next) => {
 app.listen(PORT, () => {
   connectDB();
   console.log(`server is up and running in port ${PORT}`);
+
+  if (process.env.NODE_ENV === "production") {
+    job.start();
+  }
 });
 
 // import express from "express";
@@ -73,5 +77,5 @@ app.listen(PORT, () => {
 //   connectDB();
 //   console.log(`server is up and running on port ${PORT}`);
 
-//   job.start();
+//
 // });
