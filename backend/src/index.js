@@ -18,7 +18,7 @@ const publicDir = path.join(process.cwd(), "public");
 
 // its imp that you dont parse the webhook event data , it should be in raw format
 app.use(
-  "/api/weebhooks/clerk",
+  "/api/webhooks/clerk",
   express.raw({ type: "application/json" }),
   clerkWebhook,
 );
