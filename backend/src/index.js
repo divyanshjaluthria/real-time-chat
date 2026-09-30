@@ -11,9 +11,9 @@ import { clerkMiddleware } from "@clerk/express";
 import clerkWebhook from "./webhooks/clerk.webhook.js";
 import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
+import { app, server } from "./lib/socket.js";
 
 // env data
-const app = express();
 const PORT = process.env.PORT;
 const FRONTEND_URL = process.env.FRONTEND_URL;
 const publicDir = path.join(process.cwd(), "public");
@@ -42,7 +42,7 @@ app.use(express.static(publicDir));
 app.get("/{*any}", (req, res, next) => {
   res.sendFile(path.join(publicDir, "index.html"), (err) => next(err));
 });
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   connectDB();
   console.log(`server is up and running in port ${PORT}`);
 

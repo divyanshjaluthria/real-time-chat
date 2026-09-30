@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import Message from "../models/message.model.js";
+import { getReciverSocketId } from "../lib/socket.js";
 export async function getUsersForSidebar(req, res) {
   try {
     const loggedInUserId = req.user._id;
@@ -102,6 +103,11 @@ export async function sendMessage(req, res) {
 
     await newMessage.save();
 
+    const receiverSocketId = getReciverSocketId(receiverId);
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", newMessage);
+    }
     res.status(201).json(newMessage);
   } catch (error) {
     console.error("Error in sendMessage:", error.message);
