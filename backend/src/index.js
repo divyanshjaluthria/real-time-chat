@@ -10,6 +10,7 @@ import job from "./lib/cron.js";
 import { clerkMiddleware } from "@clerk/express";
 import clerkWebhook from "./webhooks/clerk.webhook.js";
 import authRoutes from "./routes/auth.route.js";
+import messageRoutes from "./routes/message.route.js";
 
 // env data
 const app = express();
@@ -35,6 +36,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use("api/auth", authRoutes);
+app.use("api/messages", messageRoutes);
 
 app.use(express.static(publicDir));
 app.get("/{*any}", (req, res, next) => {
