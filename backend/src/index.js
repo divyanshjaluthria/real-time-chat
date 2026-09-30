@@ -9,6 +9,7 @@ import { connectDB } from "./lib/db.js";
 import job from "./lib/cron.js";
 import { clerkMiddleware } from "@clerk/express";
 import clerkWebhook from "./webhooks/clerk.webhook.js";
+import authRoutes from "./routes/auth.route.js";
 
 // env data
 const app = express();
@@ -32,6 +33,8 @@ app.use(clerkMiddleware());
 app.get("/health", (req, res) => {
   res.status(200).json({ ok: true });
 });
+
+app.use("api/auth", authRoutes);
 
 app.use(express.static(publicDir));
 app.get("/{*any}", (req, res, next) => {
