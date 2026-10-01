@@ -3,6 +3,20 @@ import { axiosInstance } from "../lib/axios";
 import { useAuthStore } from "./useAuthStore";
 import toast from "react-hot-toast";
 
+function mergeMessages(...messageGroups) {
+  const messagesById = new Map();
+
+  for (const group of messageGroups) {
+    for (const message of group) {
+      messagesById.set(String(message._id), message);
+    }
+  }
+
+  return [...messagesById.values()].sort(
+    (first, second) => new Date(first.createdAt) - new Date(second.createdAt),
+  );
+}
+
 export const useChatStore = create((set, get) => ({
   users: [],
   conversations: [],
@@ -54,7 +68,11 @@ export const useChatStore = create((set, get) => ({
     set({ isMessagesLoading: true });
     try {
       const res = await axiosInstance.get(`/messages/${userId}`);
-      set({ messages: res.data });
+      set((state) => {
+        if (String(state.activeConversationId) !== String(userId)) return {};
+
+        return { messages: mergeMessages(res.data, state.messages) };
+      });
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to load messages");
     } finally {
@@ -62,7 +80,7 @@ export const useChatStore = create((set, get) => ({
     }
   },
   sendMessage: async (messageData) => {
-    const { selectedUser, messages } = get();
+    const { selectedUser } = get();
     if (!selectedUser) return false;
 
     try {
@@ -70,7 +88,16 @@ export const useChatStore = create((set, get) => ({
         `/messages/send/${selectedUser._id}`,
         messageData,
       );
-      set({ messages: [...messages, res.data], composerText: "" });
+      set((state) => {
+        if (String(state.activeConversationId) !== String(selectedUser._id)) {
+          return {};
+        }
+
+        return {
+          messages: mergeMessages(state.messages, [res.data]),
+          composerText: "",
+        };
+      });
       get().getConversations();
       return true;
     } catch (error) {
@@ -86,12 +113,18 @@ export const useChatStore = create((set, get) => ({
 
     socket.off("newMessage");
     socket.on("newMessage", (newMessage) => {
-      // if im not the receiver don't do anything just return
-      if (String(newMessage.senderId) !== String(userId)) return;
-
-      set({ messages: [...get().messages, newMessage] });
-
       get().getConversations();
+
+      if (
+        String(newMessage.senderId) !== String(userId) ||
+        String(get().activeConversationId) !== String(userId)
+      ) {
+        return;
+      }
+
+      set((state) => ({
+        messages: mergeMessages(state.messages, [newMessage]),
+      }));
     });
   },
 
@@ -109,7 +142,11 @@ export const useChatStore = create((set, get) => ({
         state.users.find((user) => user._id === activeConversationId) ||
         state.conversations.find((user) => user._id === activeConversationId) ||
         null,
-      messages: activeConversationId ? state.messages : [],
+      messages:
+        activeConversationId &&
+        String(activeConversationId) === String(state.activeConversationId)
+          ? state.messages
+          : [],
     }));
   },
   setSearchQuery: (searchQuery) => set({ searchQuery }),

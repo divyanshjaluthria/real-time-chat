@@ -14,23 +14,33 @@ const allowedOrigin = new URL(
 
 const io = new Server(server, { cors: { origin: [allowedOrigin] } });
 
-function getReciverSocketId(userId) {
-  return userSocketMap[userId];
+function getReceiverSocketIds(userId) {
+  return userSocketMap.get(String(userId)) ?? [];
 }
 
-const userSocketMap = {};
+const userSocketMap = new Map();
 
 io.on("connection", (socket) => {
   const userId = socket.handshake.query.userId;
 
-  if (userId) userSocketMap[userId] = socket.id;
+  if (userId) {
+    const userKey = String(userId);
+    const sockets = userSocketMap.get(userKey) ?? new Set();
+    sockets.add(socket.id);
+    userSocketMap.set(userKey, sockets);
+  }
 
-  io.emit("getOnlineUsers", Object.keys(userSocketMap));
+  io.emit("getOnlineUsers", [...userSocketMap.keys()]);
 
   socket.on("disconnect", () => {
-    if (userId) delete userSocketMap[userId];
-    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    if (userId) {
+      const userKey = String(userId);
+      const sockets = userSocketMap.get(userKey);
+      sockets?.delete(socket.id);
+      if (sockets?.size === 0) userSocketMap.delete(userKey);
+    }
+    io.emit("getOnlineUsers", [...userSocketMap.keys()]);
   });
 });
 
-export { app, server, io, getReciverSocketId };
+export { app, server, io, getReceiverSocketIds };
