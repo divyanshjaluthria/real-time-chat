@@ -6,9 +6,11 @@ const app = express();
 
 const server = http.createServer(app);
 
-const allowedOrigin = process.env.FRONTEND_URL
-  ? new URL(process.env.FRONTEND_URL).origin
-  : "http://localhost:5173";
+const allowedOrigin = new URL(
+  process.env.FRONTEND_URL ||
+    process.env.RENDER_EXTERNAL_URL ||
+    "http://localhost:5173",
+).origin;
 
 const io = new Server(server, { cors: { origin: [allowedOrigin] } });
 
