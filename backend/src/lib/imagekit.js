@@ -1,4 +1,4 @@
-import ImageKit, { toFile } from "@imageKit/nodejs";
+import ImageKit, { toFile } from "@imagekit/nodejs";
 
 const imageKit = new ImageKit({ privateKey: process.env.IMAGEKIT_PRIVATE_KEY });
 
