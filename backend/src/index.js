@@ -4,7 +4,7 @@ import cors from "cors";
 import "dotenv/config";
 import fs from "fs";
 import path from "path";
-import User from "./models/user.model.js";
+import User from "./models/User.model.js";
 import { connectDB } from "./lib/db.js";
 import job from "./lib/cron.js";
 import { clerkMiddleware } from "@clerk/express";
@@ -15,7 +15,9 @@ import { app, server } from "./lib/socket.js";
 
 // env data
 const PORT = process.env.PORT;
-const FRONTEND_URL = process.env.FRONTEND_URL;
+const FRONTEND_URL = process.env.FRONTEND_URL
+  ? new URL(process.env.FRONTEND_URL).origin
+  : undefined;
 const publicDir = path.join(process.cwd(), "public");
 
 // its imp that you dont parse the webhook event data , it should be in raw format

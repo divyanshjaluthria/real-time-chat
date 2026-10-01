@@ -1,6 +1,6 @@
 import multer from "multer";
 
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 25 * 1024 * 1024;
 
 export const upload = multer({
   storage: multer.memoryStorage(),
@@ -13,6 +13,6 @@ export const upload = multer({
       cb(new Error("Only image and video uploads are allowed"));
       return;
     }
-    cb(null, ture);
+    cb(null, true);
   },
 });

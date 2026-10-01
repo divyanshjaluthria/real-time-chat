@@ -1,6 +1,7 @@
-import User from "../models/user.model.js";
+import User from "../models/User.model.js";
 import Message from "../models/message.model.js";
-import { getReciverSocketId } from "../lib/socket.js";
+import { io, getReciverSocketId } from "../lib/socket.js";
+import { hasImageKitConfig, uploadChatMedia } from "../lib/imagekit.js";
 export async function getUsersForSidebar(req, res) {
   try {
     const loggedInUserId = req.user._id;
@@ -23,7 +24,7 @@ export async function getConversationsForSidebar(req, res) {
     const conversations = await Message.aggregate([
       {
         $match: {
-          $or: [{ senderId: loggedInUserId }, { receivedId: loggedInUserId }],
+          $or: [{ senderId: loggedInUserId }, { receiverId: loggedInUserId }],
         },
       },
       {
@@ -35,7 +36,7 @@ export async function getConversationsForSidebar(req, res) {
               "$senderId",
             ],
           },
-          lastMeaasgeAt: { $max: "$createdAt" },
+          lastMessageAt: { $max: "$createdAt" },
         },
       },
       { $sort: { lastMessageAt: -1 } },
@@ -63,8 +64,10 @@ export async function getMessages(req, res) {
     const myId = req.user._id;
 
     const messages = await Message.find({
-      $or: [{ senderId: myId, receiverId: userToChatId }],
-      $or: [{ senderId: userToChatId, receiverId: myId }],
+      $or: [
+        { senderId: myId, receiverId: userToChatId },
+        { senderId: userToChatId, receiverId: myId },
+      ],
     }).sort({ createdAt: 1 });
     res.status(200).json(messages);
   } catch (error) {
@@ -86,7 +89,7 @@ export async function sendMessage(req, res) {
       if (!hasImageKitConfig()) {
         return res
           .status(500)
-          .json({ meaasge: "media upload is not configured" });
+          .json({ message: "Media upload is not configured" });
       }
 
       const url = await uploadChatMedia(req.file);

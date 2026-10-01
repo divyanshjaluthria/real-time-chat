@@ -6,7 +6,9 @@ const app = express();
 
 const server = http.createServer(app);
 
-const allowedOrigin = process.env.FRONTEND_URL || "https://localhost:5173";
+const allowedOrigin = process.env.FRONTEND_URL
+  ? new URL(process.env.FRONTEND_URL).origin
+  : "http://localhost:5173";
 
 const io = new Server(server, { cors: { origin: [allowedOrigin] } });
 
@@ -21,7 +23,7 @@ io.on("connection", (socket) => {
 
   if (userId) userSocketMap[userId] = socket.id;
 
-  io.emit("getOnlineUser", Object.keys(userSocketMap));
+  io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
   socket.on("disconnect", () => {
     if (userId) delete userSocketMap[userId];

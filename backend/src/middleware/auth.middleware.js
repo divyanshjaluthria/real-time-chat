@@ -1,5 +1,5 @@
-import { getAuth } from "@clerk/express";
-import User from "../models/user.model.js";
+import { clerkClient, getAuth } from "@clerk/express";
+import User from "../models/User.model.js";
 
 export async function protectRoute(req, res, next) {
   try {
@@ -8,10 +8,34 @@ export async function protectRoute(req, res, next) {
       res.status(401).json({ message: "unauthorized" });
       return;
     }
-    const user = await User.findOne({ clerkId: userId });
+    let user = await User.findOne({ clerkId: userId });
     if (!user) {
-      res.status(404).json({ message: "User profile is not synced yet" });
-      return;
+      const clerkUser = await clerkClient.users.getUser(userId);
+      const email =
+        clerkUser.emailAddresses.find(
+          (address) => address.id === clerkUser.primaryEmailAddressId,
+        )?.emailAddress ?? clerkUser.emailAddresses[0]?.emailAddress;
+
+      if (!email) {
+        res.status(409).json({ message: "Clerk account has no email address" });
+        return;
+      }
+
+      const fullName =
+        [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") ||
+        clerkUser.username ||
+        email.split("@")[0];
+
+      user = await User.findOneAndUpdate(
+        { email },
+        {
+          clerkId: userId,
+          email,
+          fullName,
+          profilePic: clerkUser.imageUrl,
+        },
+        { new: true, upsert: true, setDefaultsOnInsert: true },
+      );
     }
 
     req.user = user;
