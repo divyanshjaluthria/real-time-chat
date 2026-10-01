@@ -20,9 +20,9 @@ export function ThemePresetPicker() {
           variant="ghost"
           size="sm"
           isIconOnly
-          className="text-foreground"
+          className="size-8 min-w-8 p-0 text-foreground sm:size-9 sm:min-w-9"
         >
-          <Palette className="size-5" />
+          <Palette className="size-4 sm:size-5" />
         </Button>
       </Modal.Trigger>
 
