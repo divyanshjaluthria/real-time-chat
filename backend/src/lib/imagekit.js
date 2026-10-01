@@ -1,9 +1,11 @@
 import ImageKit, { toFile } from "@imagekit/nodejs";
 
-const imageKit = new ImageKit({ privateKey: process.env.IMAGEKIT_PRIVATE_KEY });
-
 function hasImageKitConfig() {
   return Boolean(process.env.IMAGEKIT_PRIVATE_KEY);
+}
+
+function getImageKit() {
+  return new ImageKit({ privateKey: process.env.IMAGEKIT_PRIVATE_KEY });
 }
 
 function createFileName(originalName = "upload") {
@@ -14,7 +16,7 @@ function createFileName(originalName = "upload") {
 async function uploadChatMedia(file) {
   const fileName = createFileName(file.originalname);
 
-  const result = await imageKit.files.upload({
+  const result = await getImageKit().files.upload({
     file: await toFile(file.buffer, fileName, { type: file.mimetype }),
     fileName,
     folder: "/chat",
